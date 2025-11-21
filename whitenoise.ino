@@ -15,7 +15,7 @@
 #define SOUND_SENSOR_PIN A2
 
 // Threshold
-int soundThreshold = 900;
+int soundThreshold = 800;
 
 // State
 bool wasLoud = false;
@@ -32,6 +32,12 @@ Adafruit_VS1053_FilePlayer musicPlayer(
 
 // g_soundRaw is defined in Delirium.ino
 extern int g_soundRaw;
+
+int soundToDb(int raw) {
+  if (raw < 10) raw = 10;
+  long scaled = (long)raw * 80L;
+  return (int)(scaled / 1023L);
+}
 
 void setupWhiteNoise() {
   Serial.println(F("Init VS1053 + SD..."));
@@ -108,9 +114,10 @@ void updateWhiteNoise(unsigned long now) {
     Serial.println(soundValue);
   }
 
-  bool isLoud = (soundValue > soundThreshold);
+  bool isLoud = (g_soundRaw > soundThreshold);
   // Check if it's loud
   if (isLoud) {
+    Serial.println("here");
     tooLoudMode = true;
     lastTriggerTime = now;
   } else if (now - lastTriggerTime > 1500) {
